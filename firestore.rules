@@ -12,8 +12,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Users can read/write their own document; admins can read/write any
-      allow read, write: if isOwner(userId) || isAdmin();
+      // Users can read their own document; admins can read any.
+      // Allow read: if true to allow username lookup before login.
+      allow read: if true;
+      allow write: if isOwner(userId) || isAdmin();
     }
 
     match /reservations/{reservationId} {

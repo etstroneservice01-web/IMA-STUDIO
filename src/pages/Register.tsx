@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 
 export default function Register() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,12 +19,22 @@ export default function Register() {
     e.preventDefault();
     try {
       setError('');
+      
+      // Check if username is already taken
+      const q = query(collection(db, 'users'), where('username', '==', username));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        setError('Ce nom d\'utilisateur est déjà pris.');
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       await setDoc(doc(db, 'users', user.uid), {
         firstName,
         lastName,
+        username,
         phone,
         email,
         role: 'user',
@@ -33,7 +44,8 @@ export default function Register() {
       setSuccess('Bienvenue à IMA Studio du SCOP. Votre compte a été créé avec succès.');
       setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err: any) {
-      setError('Erreur lors de la création du compte.');
+      console.error(err);
+      setError('Erreur lors de la création du compte. Vérifiez vos informations.');
     }
   };
 
@@ -72,6 +84,15 @@ export default function Register() {
                   className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+              <input
+                id="username" type="text" required value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Ex: jeandupont"
+              />
             </div>
 
             <div>
