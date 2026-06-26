@@ -25,7 +25,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const docRef = doc(db, 'users', firebaseUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setUserData({ uid: firebaseUser.uid, ...docSnap.data() } as User);
+            const data = docSnap.data() as User;
+            
+            // Auto-upgrade specific email to admin
+            if (data.email === 'etstroneservice01@gmail.com' && data.role !== 'admin') {
+              try {
+                const { updateDoc } = await import('firebase/firestore');
+                await updateDoc(docRef, { role: 'admin' });
+                data.role = 'admin';
+              } catch (e) {
+                console.error("Could not auto-upgrade to admin", e);
+                data.role = 'admin';
+              }
+            }
+            
+            setUserData({ uid: firebaseUser.uid, ...data });
           } else {
             setUserData(null);
           }
