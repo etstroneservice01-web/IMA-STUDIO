@@ -81,8 +81,25 @@ export default function Reservation() {
       }
     });
 
-    if (conflict) {
-      setError('Une réservation est déjà en cours pour ce créneau. Veuillez consulter le planning ci-dessous et faire une nouvelle demande sur une plage disponible.');
+    let isBlocked = false;
+    let blockReason = '';
+    blockedSlots.forEach(block => {
+      // If the block is for the whole day (no specific times) or overlaps with requested time
+      if (!block.startTime || !block.endTime) {
+        isBlocked = true;
+        blockReason = block.reason;
+      } else if (
+          (startTime >= block.startTime && startTime < block.endTime) ||
+          (endTime > block.startTime && endTime <= block.endTime) ||
+          (startTime <= block.startTime && endTime >= block.endTime)
+      ) {
+        isBlocked = true;
+        blockReason = block.reason;
+      }
+    });
+
+    if (conflict || isBlocked) {
+      setError(isBlocked ? `Ce créneau est bloqué (${blockReason}).` : 'Une réservation est déjà en cours pour ce créneau. Veuillez consulter le planning ci-dessous et faire une nouvelle demande sur une plage disponible.');
       return;
     }
 
@@ -114,6 +131,13 @@ export default function Reservation() {
     <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Réserver le studio</h1>
       
+      {blockedSlots.length > 0 && (
+        <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-6" role="alert">
+          <p className="font-bold">Attention</p>
+          <p>Certains créneaux ou la journée entière sont bloqués pour la date sélectionnée. Veuillez consulter le planning ci-dessous.</p>
+        </div>
+      )}
+
       {!userData && (
         <div className="bg-blue-50 text-blue-800 p-4 rounded-md mb-6 text-center">
           Veuillez vous <Link to="/login" className="font-bold underline">connecter</Link> pour réserver.

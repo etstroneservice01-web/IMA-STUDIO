@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { collection, query, getDocs, orderBy, addDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { Formation } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { Calendar, Clock, Users } from 'lucide-react';
@@ -35,6 +35,14 @@ export default function Formations() {
         userEmail: userData.email,
         createdAt: Date.now()
       });
+      
+      const formationDoc = doc(db, 'formations', formationId);
+      const formationData = formations.find(f => f.id === formationId);
+      if (formationData && formationData.availableSeats > 0) {
+        await updateDoc(formationDoc, { availableSeats: formationData.availableSeats - 1 });
+        setFormations(formations.map(f => f.id === formationId ? { ...f, availableSeats: f.availableSeats - 1 } : f));
+      }
+
       setMessage('Inscription réussie ! Vous la retrouverez dans votre tableau de bord.');
     } catch (error) {
       setMessage('Erreur lors de l\'inscription.');
@@ -71,7 +79,14 @@ export default function Formations() {
               </div>
               <div className="p-6 flex-1 flex flex-col">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{formation.title}</h3>
+                {formation.intervenant && <p className="text-sm font-medium text-blue-600 mb-2">Par {formation.intervenant}</p>}
                 <p className="text-gray-600 mb-4 line-clamp-3">{formation.description}</p>
+                {formation.recommendations && (
+                  <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 mb-4 italic">
+                    <span className="font-semibold block mb-1">Recommandations :</span>
+                    {formation.recommendations}
+                  </div>
+                )}
                 
                 <div className="mt-auto space-y-2 mb-6">
                   <div className="flex items-center text-sm text-gray-500">

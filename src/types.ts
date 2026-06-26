@@ -26,16 +26,23 @@ export interface Reservation {
   purpose: 'Podcast' | 'Enregistrement audio' | 'Vidéo' | 'Shooting photo' | 'Réunion' | 'Formation' | 'Autre';
   description: string;
   status: ReservationStatus;
+  rejectionNote?: string;
+  checkedIn?: boolean;
+  checkInTime?: number;
+  checkedOut?: boolean;
+  checkOutTime?: number;
+  review?: string;
+  reviewDate?: number;
   createdAt: number;
 }
 
 export interface BlockedSlot {
   id: string;
   startDate: string;
-  endDate: string;
-  startTime: string;
-  endTime: string;
-  reason: 'Maintenance' | 'Formation' | 'Événement privé' | 'Travail interne';
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  reason: string;
   createdAt: number;
 }
 
@@ -47,6 +54,8 @@ export interface Formation {
   duration: string;
   date: string;
   time: string;
+  intervenant?: string;
+  recommendations?: string;
   totalSeats: number;
   availableSeats: number;
   imageUrl: string;
