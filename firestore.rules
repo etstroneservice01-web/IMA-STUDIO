@@ -17,8 +17,8 @@ service cloud.firestore {
     }
 
     match /reservations/{reservationId} {
-      // Users can read their own reservations; admins can read/write any
-      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      // Anyone can read reservations to see the calendar availability
+      allow read: if true;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow update: if isAdmin();
       allow delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);

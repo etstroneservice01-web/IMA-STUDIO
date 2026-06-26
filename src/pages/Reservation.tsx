@@ -82,7 +82,7 @@ export default function Reservation() {
     });
 
     if (conflict) {
-      setError('Ce créneau est déjà réservé.');
+      setError('Une réservation est déjà en cours pour ce créneau. Veuillez consulter le planning ci-dessous et faire une nouvelle demande sur une plage disponible.');
       return;
     }
 
@@ -111,7 +111,7 @@ export default function Reservation() {
   if (loading) return <div className="p-8 text-center">Chargement...</div>;
 
   return (
-    <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
+    <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Réserver le studio</h1>
       
       {!userData && (
@@ -120,84 +120,139 @@ export default function Reservation() {
         </div>
       )}
 
-      <div className="bg-white shadow rounded-lg p-6 sm:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">{error}</div>}
-          {success && <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm">{success}</div>}
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Date de réservation</label>
-            <input
-              type="date"
-              required
-              min={new Date().toISOString().split('T')[0]}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white shadow rounded-lg p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">{error}</div>}
+            {success && <div className="bg-green-50 text-green-600 p-3 rounded-md text-sm">{success}</div>}
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700">Heure de début</label>
+              <label className="block text-sm font-medium text-gray-700">Date de réservation</label>
               <input
-                type="time"
+                type="date"
                 required
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Heure de début</label>
+                <input
+                  type="time"
+                  required
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Heure de fin</label>
+                <input
+                  type="time"
+                  required
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700">Heure de fin</label>
-              <input
-                type="time"
+              <label className="block text-sm font-medium text-gray-700">Objet de la réservation</label>
+              <select
                 required
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="Podcast">Podcast</option>
+                <option value="Enregistrement audio">Enregistrement audio</option>
+                <option value="Vidéo">Vidéo</option>
+                <option value="Shooting photo">Shooting photo</option>
+                <option value="Réunion">Réunion</option>
+                <option value="Formation">Formation</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                required
+                rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Détails supplémentaires sur votre besoin..."
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Objet de la réservation</label>
-            <select
-              required
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            <button
+              type="submit"
+              disabled={!userData}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              <option value="Podcast">Podcast</option>
-              <option value="Enregistrement audio">Enregistrement audio</option>
-              <option value="Vidéo">Vidéo</option>
-              <option value="Shooting photo">Shooting photo</option>
-              <option value="Réunion">Réunion</option>
-              <option value="Formation">Formation</option>
-              <option value="Autre">Autre</option>
-            </select>
-          </div>
+              Confirmer la réservation
+            </button>
+          </form>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              required
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Détails supplémentaires sur votre besoin..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={!userData}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            Confirmer la réservation
-          </button>
-        </form>
+        <div>
+          {date ? (
+            <div className="bg-white shadow rounded-lg p-6 overflow-hidden">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Planning du {new Date(date).toLocaleDateString()}</h2>
+              
+              {existingReservations.length === 0 && blockedSlots.length === 0 ? (
+                <div className="bg-blue-50 text-blue-800 p-4 rounded-md">
+                  Tous les créneaux sont disponibles pour cette date.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 border">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horaire</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                        {userData?.role === 'admin' && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>}
+                        {userData?.role === 'admin' && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {existingReservations.map((res, idx) => (
+                        <tr key={`res-${idx}`}>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{res.startTime} - {res.endTime}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">Réservé</span>
+                          </td>
+                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.userName}</td>}
+                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.purpose}</td>}
+                        </tr>
+                      ))}
+                      {blockedSlots.map((block, idx) => (
+                        <tr key={`block-${idx}`}>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{block.startTime} - {block.endTime}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm">
+                            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">Indisponible</span>
+                          </td>
+                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{block.reason}</td>}
+                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">Bloqué</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center text-gray-500">
+              <p>Sélectionnez une date pour voir les créneaux disponibles.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
