@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Function to check if the user is an admin
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      // Users can read/write their own document; admins can read/write any
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    match /reservations/{reservationId} {
+      // Users can read their own reservations; admins can read/write any
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+    }
+
+    match /blockedSlots/{slotId} {
+      // Anyone can read blocked slots to know when the studio is not available
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /formations/{formationId} {
+      // Anyone can read formations
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /inscriptions/{inscriptionId} {
+      // Users can read their own inscriptions; admins can read/write any
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow write: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      // Users can create messages, admins can read/write
+      allow create: if true; // Allows non-logged in users to contact as well if needed? User requested Contact page with Nom, Email.
+      allow read, write: if isAdmin();
+    }
+
+    match /avis/{aviId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if isAdmin();
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+  }
+}
