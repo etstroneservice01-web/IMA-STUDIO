@@ -64,7 +64,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (userData && userData.role === 'admin') {
+    if (userData && (userData.role === 'admin' || userData.role === 'observer')) {
       const fetchData = async () => {
         const resQ = query(collection(db, 'reservations'), orderBy('createdAt', 'desc'));
         const resSnap = await getDocs(resQ);
@@ -134,7 +134,9 @@ export default function AdminDashboard() {
   };
 
   if (loading) return <div className="p-8 text-center">Chargement...</div>;
-  if (!userData || userData.role !== 'admin') return <div className="p-8 text-center">Accès refusé. Administrateur uniquement.</div>;
+  if (!userData || (userData.role !== 'admin' && userData.role !== 'observer')) return <div className="p-8 text-center">Accès refusé. Administrateur uniquement.</div>;
+
+  const isObserver = userData?.role === 'observer';
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motif</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Présence</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    {!isObserver && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -195,29 +197,31 @@ export default function AdminDashboard() {
                         {res.checkedOut && <div>Départ: {new Date(res.checkOutTime || 0).toLocaleTimeString()}</div>}
                         {!res.checkedIn && !res.checkedOut && <span>-</span>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {res.status === 'pending' && (
-                          <div className="flex flex-col space-y-2">
-                            <button onClick={() => handleStatusChange(res.id, 'accepted')} className="text-green-600 hover:text-green-900 text-left">Accepter</button>
-                            <button onClick={() => setRefusalResId(res.id)} className="text-red-600 hover:text-red-900 text-left">Refuser</button>
-                            
-                            {refusalResId === res.id && (
-                              <div className="mt-2 bg-gray-50 p-2 rounded border">
-                                <textarea
-                                  value={rejectionNote}
-                                  onChange={e => setRejectionNote(e.target.value)}
-                                  className="w-full text-xs p-1 border rounded"
-                                  placeholder="Recommandations / Raison"
-                                />
-                                <div className="flex space-x-2 mt-2">
-                                  <button onClick={() => handleStatusChange(res.id, 'refused', rejectionNote)} className="bg-red-600 text-white px-2 py-1 text-xs rounded">Confirmer le refus</button>
-                                  <button onClick={() => setRefusalResId(null)} className="text-gray-500 text-xs">Annuler</button>
+                      {!isObserver && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          {res.status === 'pending' && (
+                            <div className="flex flex-col space-y-2">
+                              <button onClick={() => handleStatusChange(res.id, 'accepted')} className="text-green-600 hover:text-green-900 text-left">Accepter</button>
+                              <button onClick={() => setRefusalResId(res.id)} className="text-red-600 hover:text-red-900 text-left">Refuser</button>
+                              
+                              {refusalResId === res.id && (
+                                <div className="mt-2 bg-gray-50 p-2 rounded border">
+                                  <textarea
+                                    value={rejectionNote}
+                                    onChange={e => setRejectionNote(e.target.value)}
+                                    className="w-full text-xs p-1 border rounded"
+                                    placeholder="Recommandations / Raison"
+                                  />
+                                  <div className="flex space-x-2 mt-2">
+                                    <button onClick={() => handleStatusChange(res.id, 'refused', rejectionNote)} className="bg-red-600 text-white px-2 py-1 text-xs rounded">Confirmer le refus</button>
+                                    <button onClick={() => setRefusalResId(null)} className="text-gray-500 text-xs">Annuler</button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </td>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -258,9 +262,11 @@ export default function AdminDashboard() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Gestion des formations</h2>
-              <button onClick={() => setShowFormationForm(!showFormationForm)} className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                {showFormationForm ? 'Annuler' : 'Ajouter une formation'}
-              </button>
+              {!isObserver && (
+                <button onClick={() => setShowFormationForm(!showFormationForm)} className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                  {showFormationForm ? 'Annuler' : 'Ajouter une formation'}
+                </button>
+              )}
             </div>
 
             {showFormationForm && (
@@ -345,34 +351,35 @@ export default function AdminDashboard() {
 
         {activeTab === 'calendrier' && (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Bloquer des créneaux</h2>
-            <form onSubmit={handleBlockSlot} className="bg-gray-50 p-4 rounded-md mb-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Date de début</label>
-                  <input type="date" required value={blockStartDate} onChange={e => setBlockStartDate(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
+            <h2 className="text-xl font-semibold mb-4">Créneaux bloqués</h2>
+            {!isObserver && (
+              <form onSubmit={handleBlockSlot} className="bg-gray-50 p-4 rounded-md mb-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date de début</label>
+                    <input type="date" required value={blockStartDate} onChange={e => setBlockStartDate(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date de fin (optionnel)</label>
+                    <input type="date" value={blockEndDate} onChange={e => setBlockEndDate(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Heure de début (optionnel)</label>
+                    <input type="time" value={blockStartTime} onChange={e => setBlockStartTime(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Heure de fin (optionnel)</label>
+                    <input type="time" value={blockEndTime} onChange={e => setBlockEndTime(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Raison</label>
+                    <input type="text" required value={blockReason} onChange={e => setBlockReason(e.target.value)} placeholder="Maintenance, Férié..." className="mt-1 block w-full px-3 py-2 border rounded-md" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Date de fin (optionnel)</label>
-                  <input type="date" value={blockEndDate} onChange={e => setBlockEndDate(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Heure de début (optionnel)</label>
-                  <input type="time" value={blockStartTime} onChange={e => setBlockStartTime(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Heure de fin (optionnel)</label>
-                  <input type="time" value={blockEndTime} onChange={e => setBlockEndTime(e.target.value)} className="mt-1 block w-full px-3 py-2 border rounded-md" />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Raison</label>
-                  <input type="text" required value={blockReason} onChange={e => setBlockReason(e.target.value)} placeholder="Maintenance, Férié..." className="mt-1 block w-full px-3 py-2 border rounded-md" />
-                </div>
-              </div>
-              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium">Bloquer</button>
-            </form>
+                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium">Bloquer</button>
+              </form>
+            )}
 
-            <h3 className="text-lg font-medium mb-2">Créneaux bloqués</h3>
             <div className="space-y-2">
               {blockedSlots.map(block => (
                 <div key={block.id} className="flex justify-between items-center p-3 border rounded-md">
@@ -381,7 +388,7 @@ export default function AdminDashboard() {
                     {(block.startTime || block.endTime) && <span className="ml-2 text-gray-600">({block.startTime || '00:00'} - {block.endTime || '23:59'})</span>}
                     <span className="ml-2 bg-gray-200 px-2 py-1 rounded text-xs">{block.reason}</span>
                   </div>
-                  <button onClick={() => handleDeleteBlock(block.id)} className="text-red-600 hover:text-red-800 text-sm">Supprimer</button>
+                  {!isObserver && <button onClick={() => handleDeleteBlock(block.id)} className="text-red-600 hover:text-red-800 text-sm">Supprimer</button>}
                 </div>
               ))}
               {blockedSlots.length === 0 && <p className="text-gray-500">Aucun créneau bloqué.</p>}
@@ -408,7 +415,7 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <p className="mt-3 whitespace-pre-wrap">{msg.content}</p>
-                    {msg.status === 'new' && (
+                    {msg.status === 'new' && !isObserver && (
                       <div className="mt-4 flex space-x-2">
                         <button 
                           onClick={async () => {

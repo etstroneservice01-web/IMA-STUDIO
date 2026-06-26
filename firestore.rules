@@ -6,6 +6,11 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
+
+    // Function to check if the user is an observer
+    function isObserver() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'observer';
+    }
     
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
@@ -40,7 +45,7 @@ service cloud.firestore {
 
     match /inscriptions/{inscriptionId} {
       // Users can read their own inscriptions; admins can read/write any
-      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin() || isObserver();
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow write: if isAdmin();
     }
@@ -48,7 +53,8 @@ service cloud.firestore {
     match /messages/{messageId} {
       // Users can create messages, admins can read/write
       allow create: if true; // Allows non-logged in users to contact as well if needed? User requested Contact page with Nom, Email.
-      allow read, write: if isAdmin();
+      allow read: if isAdmin() || isObserver();
+      allow write: if isAdmin();
     }
 
     match /avis/{aviId} {

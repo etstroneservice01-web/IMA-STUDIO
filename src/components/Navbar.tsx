@@ -54,7 +54,7 @@ export default function Navbar() {
               <>
                 {userData ? (
                   <div className="flex items-center space-x-4">
-                    <Link to={userData.role === 'admin' ? '/admin' : '/dashboard'} className="text-gray-500 hover:text-blue-600 flex items-center space-x-1">
+                    <Link to={(userData.role === 'admin' || userData.role === 'observer') ? '/admin' : '/dashboard'} className="text-gray-500 hover:text-blue-600 flex items-center space-x-1">
                       <UserIcon className="h-5 w-5" />
                       <span className="text-sm font-medium">{userData.firstName}</span>
                     </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
                   <p className="text-sm font-medium text-gray-500">{userData.email}</p>
                 </div>
                 <Link
-                  to={userData.role === 'admin' ? '/admin' : '/dashboard'}
+                  to={(userData.role === 'admin' || userData.role === 'observer') ? '/admin' : '/dashboard'}
                   className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                   onClick={() => setIsOpen(false)}
                 >

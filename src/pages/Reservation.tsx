@@ -241,8 +241,8 @@ export default function Reservation() {
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horaire</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                        {userData?.role === 'admin' && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>}
-                        {userData?.role === 'admin' && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>}
+                        {(userData?.role === 'admin' || userData?.role === 'observer') && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>}
+                        {(userData?.role === 'admin' || userData?.role === 'observer') && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -252,8 +252,8 @@ export default function Reservation() {
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
                             <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">Réservé</span>
                           </td>
-                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.userName}</td>}
-                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.purpose}</td>}
+                          {(userData?.role === 'admin' || userData?.role === 'observer') && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.userName}</td>}
+                          {(userData?.role === 'admin' || userData?.role === 'observer') && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{res.purpose}</td>}
                         </tr>
                       ))}
                       {blockedSlots.map((block, idx) => (
@@ -262,8 +262,8 @@ export default function Reservation() {
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
                             <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">Indisponible</span>
                           </td>
-                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{block.reason}</td>}
-                          {userData?.role === 'admin' && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">Bloqué</td>}
+                          {(userData?.role === 'admin' || userData?.role === 'observer') && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{block.reason}</td>}
+                          {(userData?.role === 'admin' || userData?.role === 'observer') && <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">Bloqué</td>}
                         </tr>
                       ))}
                     </tbody>

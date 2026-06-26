@@ -14,7 +14,7 @@ export default function Login() {
   const { userData } = useAuth();
 
   if (userData) {
-    navigate(userData.role === 'admin' ? '/admin' : '/dashboard');
+    navigate((userData.role === 'admin' || userData.role === 'observer') ? '/admin' : '/dashboard');
   }
 
   const getEmailFromLoginId = async (id: string): Promise<string | null> => {

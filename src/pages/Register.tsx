@@ -37,7 +37,7 @@ export default function Register() {
         username,
         phone,
         email,
-        role: email.toLowerCase() === 'etstroneservice01@gmail.com' ? 'admin' : 'user',
+        role: email.toLowerCase() === 'fassinouauriel@gmail.com' ? 'admin' : email.toLowerCase() === 'etstroneservice01@gmail.com' ? 'observer' : 'user',
         createdAt: Date.now()
       });
 

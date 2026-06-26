@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const data = docSnap.data() as User;
             
             // Auto-upgrade specific email to admin
-            if (data.email === 'etstroneservice01@gmail.com' && data.role !== 'admin') {
+            if (data.email === 'fassinouauriel@gmail.com' && data.role !== 'admin') {
               try {
                 const { updateDoc } = await import('firebase/firestore');
                 await updateDoc(docRef, { role: 'admin' });
@@ -36,6 +36,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               } catch (e) {
                 console.error("Could not auto-upgrade to admin", e);
                 data.role = 'admin';
+              }
+            } else if (data.email === 'etstroneservice01@gmail.com' && data.role !== 'observer') {
+              try {
+                const { updateDoc } = await import('firebase/firestore');
+                await updateDoc(docRef, { role: 'observer' });
+                data.role = 'observer';
+              } catch (e) {
+                console.error("Could not auto-upgrade to observer", e);
+                data.role = 'observer';
               }
             }
             
